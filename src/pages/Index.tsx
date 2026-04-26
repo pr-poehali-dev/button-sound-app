@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import SplashScreen from '@/components/soundboard/SplashScreen';
 import SoundButton from '@/components/soundboard/SoundButton';
 import StatsPanel from '@/components/soundboard/StatsPanel';
-import { SOUNDS, STORAGE_KEY, type SoundDef } from '@/components/soundboard/sounds';
+import { SOUNDS, STORAGE_KEY, playBark, type SoundDef } from '@/components/soundboard/sounds';
 
 const Index = () => {
   const [stats, setStats] = useState<Record<string, number>>(() => {
@@ -19,6 +19,13 @@ const Index = () => {
   const ctxRef = useRef<AudioContext | null>(null);
 
   const dismissSplash = () => {
+    if (!ctxRef.current) {
+      const W = window as unknown as { webkitAudioContext: typeof AudioContext };
+      ctxRef.current = new (window.AudioContext || W.webkitAudioContext)();
+    }
+    const ctx = ctxRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+    playBark(ctx);
     setSplashState('leaving');
     setTimeout(() => setSplashState('gone'), 900);
   };

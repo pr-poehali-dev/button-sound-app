@@ -42,6 +42,50 @@ const playNoise = (ctx: AudioContext, duration: number, vol = 0.3, filterFreq = 
   src.start();
 };
 
+export const playBark = (ctx: AudioContext) => {
+  const bark = (start: number) => {
+    const osc = ctx.createOscillator();
+    const sub = ctx.createOscillator();
+    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * (1 - i / nd.length);
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuf;
+
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 900;
+    filter.Q.value = 1.5;
+
+    osc.type = 'sawtooth';
+    sub.type = 'square';
+    osc.frequency.setValueAtTime(420, ctx.currentTime + start);
+    osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + start + 0.18);
+    sub.frequency.setValueAtTime(140, ctx.currentTime + start);
+    sub.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + start + 0.18);
+
+    gain.gain.setValueAtTime(0, ctx.currentTime + start);
+    gain.gain.linearRampToValueAtTime(0.45, ctx.currentTime + start + 0.02);
+    gain.gain.setValueAtTime(0.45, ctx.currentTime + start + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + 0.18);
+
+    osc.connect(filter);
+    sub.connect(filter);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(ctx.currentTime + start);
+    sub.start(ctx.currentTime + start);
+    noise.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + 0.2);
+    sub.stop(ctx.currentTime + start + 0.2);
+  };
+  bark(0);
+  bark(0.28);
+};
+
 export const SOUNDS: SoundDef[] = [
   {
     id: 'censor-beep',
@@ -50,17 +94,6 @@ export const SOUNDS: SoundDef[] = [
     glow: 'glow-red',
     accent: '#ff1744',
     play: (ctx) => playBeep(ctx, 1000, 1.0, 'sine', 0.32),
-  },
-  {
-    id: 'censor-double',
-    name: 'Двойной БИП',
-    emoji: '🚫',
-    glow: 'glow-orange',
-    accent: '#ff6b00',
-    play: (ctx) => {
-      playBeep(ctx, 1200, 0.18, 'sine', 0.3);
-      setTimeout(() => playBeep(ctx, 1200, 0.18, 'sine', 0.3), 220);
-    },
   },
   {
     id: 'censor-honk',
@@ -178,9 +211,32 @@ export const SOUNDS: SoundDef[] = [
     glow: 'glow-green',
     accent: '#39ff14',
     play: (ctx) => {
-      for (let i = 0; i < 6; i++) {
-        setTimeout(() => playNoise(ctx, 0.08, 0.18, 3000 + Math.random() * 2000), i * 60 + Math.random() * 40);
+      const totalDur = 1.2;
+      const buffer = ctx.createBuffer(1, ctx.sampleRate * totalDur, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        const t = i / ctx.sampleRate;
+        const burst =
+          Math.random() < 0.04 ? (Math.random() * 2 - 1) * 1.0 : (Math.random() * 2 - 1) * 0.25;
+        const env = Math.exp(-t * 1.2) * (0.6 + 0.4 * Math.sin(t * 50));
+        data[i] = burst * env;
       }
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1800;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 5500;
+      bp.Q.value = 0.7;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.5;
+      src.connect(hp);
+      hp.connect(bp);
+      bp.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
     },
   },
   {
