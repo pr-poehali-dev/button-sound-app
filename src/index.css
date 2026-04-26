@@ -201,6 +201,137 @@
   animation: count-pop 0.3s ease-out;
 }
 
+/* Splash screen animations */
+@keyframes rainbow-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rainbow-glow {
+  0% {
+    box-shadow:
+      0 0 30px #ff1744,
+      0 0 80px rgba(255, 23, 68, 0.5);
+  }
+  16% {
+    box-shadow:
+      0 0 30px #ff6b00,
+      0 0 80px rgba(255, 107, 0, 0.5);
+  }
+  33% {
+    box-shadow:
+      0 0 30px #ffe500,
+      0 0 80px rgba(255, 229, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 30px #39ff14,
+      0 0 80px rgba(57, 255, 20, 0.5);
+  }
+  66% {
+    box-shadow:
+      0 0 30px #00d4ff,
+      0 0 80px rgba(0, 212, 255, 0.5);
+  }
+  83% {
+    box-shadow:
+      0 0 30px #bf5fff,
+      0 0 80px rgba(191, 95, 255, 0.5);
+  }
+  100% {
+    box-shadow:
+      0 0 30px #ff1744,
+      0 0 80px rgba(255, 23, 68, 0.5);
+  }
+}
+
+@keyframes text-rise {
+  0% {
+    transform: translateY(120%) rotate(-3deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-8%) rotate(1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes splash-down {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes avatar-pop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+  }
+  70% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes button-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.rainbow-bg {
+  background: linear-gradient(
+    90deg,
+    #ff1744,
+    #ff6b00,
+    #ffe500,
+    #39ff14,
+    #00d4ff,
+    #bf5fff,
+    #ff2d78,
+    #ff1744
+  );
+  background-size: 400% 100%;
+  animation: rainbow-shift 3s linear infinite;
+}
+
+.rainbow-glow {
+  animation:
+    rainbow-glow 2.5s linear infinite,
+    button-pulse 1.8s ease-in-out infinite;
+}
+
+.text-rise {
+  animation: text-rise 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.splash-down {
+  animation: splash-down 0.9s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+.avatar-pop {
+  animation: avatar-pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
