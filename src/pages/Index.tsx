@@ -165,6 +165,33 @@ const SOUNDS: SoundDef[] = [
       });
     },
   },
+  {
+    id: 'dolphin',
+    name: 'Дельфин',
+    emoji: '🐬',
+    glow: 'glow-cyan',
+    accent: '#00e5ff',
+    play: (ctx) => {
+      const chirp = (start: number, fStart: number, fEnd: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(fStart, ctx.currentTime + start);
+        osc.frequency.exponentialRampToValueAtTime(fEnd, ctx.currentTime + start + dur);
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      chirp(0, 1800, 3400, 0.18);
+      chirp(0.22, 2200, 3800, 0.16);
+      chirp(0.42, 1600, 3000, 0.2);
+      chirp(0.68, 2400, 4200, 0.14);
+    },
+  },
 ];
 
 const STORAGE_KEY = 'soundboard-stats-v1';
@@ -188,7 +215,8 @@ const Index = () => {
 
   const handlePlay = (sound: SoundDef) => {
     if (!ctxRef.current) {
-      ctxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const W = window as unknown as { webkitAudioContext: typeof AudioContext };
+      ctxRef.current = new (window.AudioContext || W.webkitAudioContext)();
     }
     const ctx = ctxRef.current;
     if (ctx.state === 'suspended') ctx.resume();
