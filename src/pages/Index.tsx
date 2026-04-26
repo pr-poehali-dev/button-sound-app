@@ -45,41 +45,53 @@ const playNoise = (ctx: AudioContext, duration: number, vol = 0.3, filterFreq = 
 const SOUNDS: SoundDef[] = [
   {
     id: 'censor-beep',
-    name: 'Цензура: БИП',
+    name: 'TV БИП',
     emoji: '🔇',
     glow: 'glow-red',
     accent: '#ff1744',
-    play: (ctx) => playBeep(ctx, 1000, 0.6, 'sine', 0.3),
+    play: (ctx) => playBeep(ctx, 1000, 1.0, 'sine', 0.32),
+  },
+  {
+    id: 'censor-double',
+    name: 'Двойной БИП',
+    emoji: '🚫',
+    glow: 'glow-orange',
+    accent: '#ff6b00',
+    play: (ctx) => {
+      playBeep(ctx, 1200, 0.18, 'sine', 0.3);
+      setTimeout(() => playBeep(ctx, 1200, 0.18, 'sine', 0.3), 220);
+    },
   },
   {
     id: 'censor-honk',
-    name: 'Цензура: гудок',
+    name: 'Гудок',
     emoji: '📯',
     glow: 'glow-yellow',
     accent: '#ffe500',
     play: (ctx) => {
-      playBeep(ctx, 440, 0.4, 'square', 0.25);
-      setTimeout(() => playBeep(ctx, 380, 0.4, 'square', 0.25), 150);
+      playBeep(ctx, 420, 0.55, 'square', 0.22);
+      setTimeout(() => playBeep(ctx, 360, 0.45, 'square', 0.22), 200);
     },
   },
   {
-    id: 'censor-squeak',
-    name: 'Цензура: писк',
-    emoji: '🐭',
+    id: 'censor-whistle',
+    name: 'Свисток',
+    emoji: '🥷',
     glow: 'glow-pink',
     accent: '#ff2d78',
     play: (ctx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(2200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(3200, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.frequency.setValueAtTime(2400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(3600, ctx.currentTime + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.45);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.3);
+      osc.stop(ctx.currentTime + 0.5);
     },
   },
   {
@@ -280,65 +292,61 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Sound buttons grid */}
-        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-16">
+        {/* Sound buttons grid — round style (Censorship Songs Prank vibe) */}
+        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 mb-16 place-items-center">
           {SOUNDS.map((sound, idx) => {
             const count = stats[sound.id] || 0;
             const isPlaying = playingId === sound.id;
             const isPopped = poppedId === sound.id;
             return (
-              <button
-                key={sound.id}
-                onClick={() => handlePlay(sound)}
-                className={`sound-btn group relative aspect-square rounded-3xl overflow-hidden border-2 transition-all duration-300 hover:-translate-y-1 active:scale-95 animate-slide-up ${isPlaying ? 'playing ' + sound.glow : ''}`}
-                style={{
-                  borderColor: sound.accent + '60',
-                  animationDelay: `${idx * 60}ms`,
-                  boxShadow: isPlaying ? undefined : `0 8px 32px ${sound.accent}25`,
-                }}
-              >
-                <img
-                  src={DOG_IMAGE}
-                  alt={sound.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div
-                  className="absolute inset-0 mix-blend-multiply transition-opacity duration-300 opacity-70 group-hover:opacity-50"
-                  style={{ background: `linear-gradient(180deg, transparent 30%, ${sound.accent}90 100%)` }}
-                />
-                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
-
-                {/* Top-right counter */}
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-xs font-bold flex items-center gap-1">
-                  <Icon name="Play" size={10} />
-                  <span className={isPopped ? 'count-pop inline-block' : ''}>{count}</span>
-                </div>
-
-                {/* Big emoji */}
-                <div className={`absolute top-4 left-4 text-4xl drop-shadow-lg ${isPlaying ? 'animate-float' : ''}`}>
-                  {sound.emoji}
-                </div>
-
-                {/* Bottom label */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
-                  <div className="text-xs uppercase tracking-widest font-bold mb-1" style={{ color: sound.accent }}>
-                    Track {String(idx + 1).padStart(2, '0')}
-                  </div>
-                  <div className="text-white font-black text-lg leading-tight drop-shadow-md">
-                    {sound.name}
-                  </div>
-                </div>
-
-                {isPlaying && (
-                  <span
-                    className="absolute inset-0 rounded-3xl pointer-events-none"
-                    style={{
-                      animation: 'ripple 0.6s ease-out',
-                      border: `3px solid ${sound.accent}`,
-                    }}
+              <div key={sound.id} className="flex flex-col items-center gap-3 animate-slide-up" style={{ animationDelay: `${idx * 60}ms` }}>
+                <button
+                  onClick={() => handlePlay(sound)}
+                  className={`sound-btn group relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden transition-all duration-300 hover:-translate-y-1 active:scale-95 ${isPlaying ? 'playing ' + sound.glow : ''}`}
+                  style={{
+                    background: `radial-gradient(circle at 30% 25%, ${sound.accent}, ${sound.accent}99 55%, ${sound.accent}55 100%)`,
+                    boxShadow: isPlaying
+                      ? undefined
+                      : `0 14px 30px ${sound.accent}55, inset 0 -8px 20px rgba(0,0,0,0.25), inset 0 8px 20px rgba(255,255,255,0.25)`,
+                  }}
+                >
+                  <img
+                    src={DOG_IMAGE}
+                    alt={sound.name}
+                    className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay transition-transform duration-500 group-hover:scale-110"
                   />
-                )}
-              </button>
+                  {/* Glossy highlight */}
+                  <span
+                    className="absolute top-2 left-1/2 -translate-x-1/2 w-3/4 h-1/3 rounded-full pointer-events-none"
+                    style={{ background: 'radial-gradient(ellipse, rgba(255,255,255,0.55), transparent 70%)' }}
+                  />
+                  {/* Inner ring */}
+                  <span className="absolute inset-2 rounded-full ring-2 ring-white/30 pointer-events-none" />
+
+                  {/* Big emoji */}
+                  <div className={`absolute inset-0 flex items-center justify-center text-6xl md:text-7xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)] ${isPlaying ? 'animate-float' : ''}`}>
+                    {sound.emoji}
+                  </div>
+
+                  {/* Counter badge */}
+                  <div className="absolute -top-1 -right-1 min-w-[28px] h-7 px-2 rounded-full bg-black/80 backdrop-blur-sm border border-white/20 text-xs font-black flex items-center justify-center text-white shadow-lg">
+                    <span className={isPopped ? 'count-pop inline-block' : ''}>{count}</span>
+                  </div>
+
+                  {isPlaying && (
+                    <span
+                      className="absolute inset-0 rounded-full pointer-events-none"
+                      style={{
+                        animation: 'ripple 0.6s ease-out',
+                        border: `4px solid ${sound.accent}`,
+                      }}
+                    />
+                  )}
+                </button>
+                <div className="text-center font-bold text-sm md:text-base max-w-[10rem] leading-tight" style={{ color: sound.accent }}>
+                  {sound.name}
+                </div>
+              </div>
             );
           })}
         </section>
