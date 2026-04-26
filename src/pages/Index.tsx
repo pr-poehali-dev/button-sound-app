@@ -115,14 +115,23 @@ const SOUNDS: SoundDef[] = [
   },
   {
     id: 'nut-crack',
-    name: 'Раскол ореха',
+    name: 'Цензура (ролик)',
     emoji: '🥜',
     glow: 'glow-orange',
     accent: '#ff6b00',
     play: (ctx) => {
-      playNoise(ctx, 0.08, 0.5, 800);
-      setTimeout(() => playNoise(ctx, 0.15, 0.4, 400), 30);
-      setTimeout(() => playBeep(ctx, 120, 0.1, 'square', 0.2), 40);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.32, ctx.currentTime + 0.005);
+      gain.gain.setValueAtTime(0.32, ctx.currentTime + 0.22);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.26);
     },
   },
   {
@@ -134,22 +143,32 @@ const SOUNDS: SoundDef[] = [
     play: (ctx) => {
       const osc1 = ctx.createOscillator();
       const osc2 = ctx.createOscillator();
+      const osc3 = ctx.createOscillator();
       const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
       osc1.type = 'sawtooth';
-      osc2.type = 'sawtooth';
-      osc1.frequency.value = 130;
-      osc2.frequency.value = 165;
+      osc2.type = 'square';
+      osc3.type = 'triangle';
+      osc1.frequency.value = 75;
+      osc2.frequency.value = 92;
+      osc3.frequency.value = 110;
+      filter.type = 'lowpass';
+      filter.frequency.value = 600;
       gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.25, ctx.currentTime + 1.0);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.4);
-      osc1.connect(gain);
-      osc2.connect(gain);
+      gain.gain.linearRampToValueAtTime(0.32, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.32, ctx.currentTime + 1.6);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.2);
+      osc1.connect(filter);
+      osc2.connect(filter);
+      osc3.connect(filter);
+      filter.connect(gain);
       gain.connect(ctx.destination);
       osc1.start();
       osc2.start();
-      osc1.stop(ctx.currentTime + 1.4);
-      osc2.stop(ctx.currentTime + 1.4);
+      osc3.start();
+      osc1.stop(ctx.currentTime + 2.2);
+      osc2.stop(ctx.currentTime + 2.2);
+      osc3.stop(ctx.currentTime + 2.2);
     },
   },
   {
@@ -162,26 +181,6 @@ const SOUNDS: SoundDef[] = [
       for (let i = 0; i < 6; i++) {
         setTimeout(() => playNoise(ctx, 0.08, 0.18, 3000 + Math.random() * 2000), i * 60 + Math.random() * 40);
       }
-    },
-  },
-  {
-    id: 'laser',
-    name: 'Лазер',
-    emoji: '🔫',
-    glow: 'glow-purple',
-    accent: '#bf5fff',
-    play: (ctx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(1800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.4);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
     },
   },
   {
