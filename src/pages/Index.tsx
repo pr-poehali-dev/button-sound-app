@@ -69,8 +69,27 @@ const SOUNDS: SoundDef[] = [
     glow: 'glow-yellow',
     accent: '#ffe500',
     play: (ctx) => {
-      playBeep(ctx, 420, 0.55, 'square', 0.22);
-      setTimeout(() => playBeep(ctx, 360, 0.45, 'square', 0.22), 200);
+      const honk = (start: number, freq: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+        osc.frequency.linearRampToValueAtTime(freq * 0.9, ctx.currentTime + start + dur);
+        filter.type = 'lowpass';
+        filter.frequency.value = 1400;
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + start + 0.03);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + start + dur - 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      honk(0, 280, 0.28);
+      honk(0.32, 220, 0.42);
     },
   },
   {
@@ -166,43 +185,12 @@ const SOUNDS: SoundDef[] = [
     },
   },
   {
-    id: 'success',
-    name: 'Успех',
-    emoji: '✨',
-    glow: 'glow-cyan',
-    accent: '#00d4ff',
-    play: (ctx) => {
-      [523, 659, 784, 1047].forEach((f, i) => {
-        setTimeout(() => playBeep(ctx, f, 0.15, 'sine', 0.2), i * 80);
-      });
-    },
-  },
-  {
-    id: 'dolphin',
-    name: 'Дельфин',
-    emoji: '🐬',
+    id: 'censor-high',
+    name: 'Высокий писк',
+    emoji: '📡',
     glow: 'glow-cyan',
     accent: '#00e5ff',
-    play: (ctx) => {
-      const chirp = (start: number, fStart: number, fEnd: number, dur: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(fStart, ctx.currentTime + start);
-        osc.frequency.exponentialRampToValueAtTime(fEnd, ctx.currentTime + start + dur);
-        gain.gain.setValueAtTime(0, ctx.currentTime + start);
-        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + start + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + start);
-        osc.stop(ctx.currentTime + start + dur);
-      };
-      chirp(0, 1800, 3400, 0.18);
-      chirp(0.22, 2200, 3800, 0.16);
-      chirp(0.42, 1600, 3000, 0.2);
-      chirp(0.68, 2400, 4200, 0.14);
-    },
+    play: (ctx) => playBeep(ctx, 1500, 0.9, 'sine', 0.28),
   },
 ];
 
